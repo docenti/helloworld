@@ -1,0 +1,16 @@
+﻿version: '3'
+
+services:
+  db:
+    image: postgres:14.5
+    volumes:
+      - postgres_hw_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=hello
+      - POSTGRES_PASSWORD=hello
+      - POSTGRES_DB=hello
+    ports:
+      - "25432:5432"
+
+volumes:
+  postgres_hw_data:
