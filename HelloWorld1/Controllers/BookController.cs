@@ -25,7 +25,7 @@ namespace HelloWorld1.Controllers
 
         // GET: api/Book/5
         [HttpGet("{id:long}")]
-        public async Task<ActionResult<Book>> GetBook(int id, CancellationToken cancel)
+        public async Task<ActionResult<Book>> GetBook(long id, CancellationToken cancel)
         {
             // var book = await _dbContext.Books.FindAsync(new object?[] { request.Id }, cancel); // I don't like this
             var book = await _dbContext.Books.SingleOrDefaultAsync(x=>x.Id == id, cancel);
@@ -71,7 +71,7 @@ namespace HelloWorld1.Controllers
 
         // DELETE: api/Book/5
         [HttpDelete("{id:long}")]
-        public async Task<IActionResult> DeleteBook(int id, CancellationToken cancel)
+        public async Task<IActionResult> DeleteBook(long id, CancellationToken cancel)
         {
             var book = await _dbContext.Books.SingleOrDefaultAsync(x=> x.Id == id, cancel);
 

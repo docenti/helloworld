@@ -6,10 +6,10 @@ namespace HelloWorld1.Services;
 public interface IBookService
 {
     IEnumerable<Book> GetAll();
-    Book GetById(int id);
+    Book GetById(long id);
     Book Add(Book book);
     void Update(Book book);
-    void Delete(int id);
+    void Delete(long id);
 }
 
 public class BookService : IBookService
@@ -26,7 +26,7 @@ public class BookService : IBookService
         return _dbContext.Books;
     }
 
-    public Book GetById(int id)
+    public Book GetById(long id)
     {
         return GetBook(id);
     }
@@ -54,7 +54,7 @@ public class BookService : IBookService
         _dbContext.SaveChanges();
     }
 
-    public void Delete(int id)
+    public void Delete(long id)
     {
         var book = GetBook(id);
 
