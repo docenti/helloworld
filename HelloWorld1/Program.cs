@@ -1,9 +1,11 @@
 using HelloWorld1.Infrastructure;
+using HelloWorld1.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddControllers();
 builder.Services.AddDbContext<DataContext>();
 

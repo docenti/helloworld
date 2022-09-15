@@ -1,15 +1,14 @@
 ﻿using HelloWorld1.Infrastructure;
 using HelloWorld1.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HelloWorld1.Services;
 
 public interface IBookService
 {
-    IEnumerable<Book> GetAll();
-    Book GetById(long id);
-    Book Add(Book book);
-    void Update(Book book);
-    void Delete(long id);
+    Task<Book> Add(Book book, CancellationToken cancel);
+    Task<int> Update(long id, Book book, CancellationToken cancel);
+    Task<IEnumerable<Book>> GetNewest(int amount, CancellationToken cancel);
 }
 
 public class BookService : IBookService
@@ -21,54 +20,34 @@ public class BookService : IBookService
         _dbContext = dbContext;
     }
 
-    public IEnumerable<Book> GetAll()
+    public async Task<Book> Add(Book book, CancellationToken cancel)
     {
-        return _dbContext.Books;
-    }
-
-    public Book GetById(long id)
-    {
-        return GetBook(id);
-    }
-
-    public Book Add(Book book)
-    {
-        // TODO: proper validation of book
-        if (_dbContext.Books.Any(x => x.Id == book.Id))
-            throw new Exception("Book already exists");
         _dbContext.Books.Add(book);
+        await _dbContext.SaveChangesAsync(cancel);
+
         return book;
     }
 
-    public void Update(Book book)
+    public async Task<int> Update(long id, Book request, CancellationToken cancel)
     {
-        var b = GetBook(book.Id);
-
-        // TODO: some validation
-
-        // TODO: proper implementation of update
-        b.Title = book.Title;
-        //b.Author = book.Author;
-
-        _dbContext.Books.Update(b);
-        _dbContext.SaveChanges();
-    }
-
-    public void Delete(long id)
-    {
-        var book = GetBook(id);
-
-        _dbContext.Books.Remove(book);
-        _dbContext.SaveChanges();
-    }
-
-    private Book GetBook(long id)
-    {
-        var book = _dbContext.Books.Find(id);
+        var book = await _dbContext.Books.SingleOrDefaultAsync(x=> x.Id == request.Id, cancel);
 
         if (book == null)
-            throw new InvalidOperationException("Book not found");
+            throw new Exception("Book not found: ");
 
-        return book;
+        book.Title = request.Title;
+        book.PublishedOn = request.PublishedOn;
+        book.ImageUrl = request.ImageUrl;
+        book.Description = request.Description;
+
+        return await _dbContext.SaveChangesAsync(cancel);
+    }
+
+    public async Task<IEnumerable<Book>> GetNewest(int amount, CancellationToken cancel)
+    {
+        return await _dbContext.Books.
+            OrderByDescending(b => b.PublishedOn).
+            Take(amount).
+            ToListAsync(cancel);
     }
 }

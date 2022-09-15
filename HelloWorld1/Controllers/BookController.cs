@@ -1,5 +1,6 @@
 using HelloWorld1.Infrastructure;
 using HelloWorld1.Models;
+using HelloWorld1.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +11,12 @@ namespace HelloWorld1.Controllers
     public class BookController : ControllerBase
     {
         private readonly DataContext _dbContext;
+        private readonly IBookService _bookService;
 
-        public BookController(DataContext dbContext)
+        public BookController(DataContext dbContext, IBookService bookService)
         {
             _dbContext = dbContext;
+            _bookService = bookService;
         }
 
         // GET: api/Book
@@ -40,18 +43,7 @@ namespace HelloWorld1.Controllers
         [HttpPatch("{id:long}")]
         public async Task<IActionResult> PutBook(long id, Book request, CancellationToken cancel)
         {
-            var book = await _dbContext.Books.SingleOrDefaultAsync(x=> x.Id == request.Id, cancel);
-
-            if (book == null)
-                return NotFound();
-
-            book.Title = request.Title;
-            // book.AuthorRef = request.AuthorRef;
-            book.PublishedOn = request.PublishedOn;
-            book.ImageUrl = request.ImageUrl;
-            book.Description = request.Description;
-
-            await _dbContext.SaveChangesAsync(cancel);
+            await _bookService.Update(id, request, cancel);
 
             return NoContent();
         }
@@ -63,10 +55,7 @@ namespace HelloWorld1.Controllers
             if (book.Id != default)
                 return BadRequest();
 
-            _dbContext.Books.Add(book);
-            await _dbContext.SaveChangesAsync(cancel);
-
-            return book;
+            return await _bookService.Add(book, cancel);
         }
 
         // DELETE: api/Book/5
@@ -83,5 +72,13 @@ namespace HelloWorld1.Controllers
 
             return NoContent();
         }
+        
+        // GET: api/Book
+        [HttpGet("newest/{amount}")]
+        public async Task<ActionResult<IEnumerable<Book>>> GetNewest(int amount, CancellationToken cancel)
+        {
+            return Ok(await _bookService.GetNewest(amount, cancel));
+        }
+
     }
 }
