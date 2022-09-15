@@ -1,4 +1,4 @@
-﻿using HelloWorld1.Helpers;
+﻿using HelloWorld1.Infrastructure;
 using HelloWorld1.Models;
 
 namespace HelloWorld1.Services;
@@ -14,60 +14,61 @@ public interface IBookService
 
 public class BookService : IBookService
 {
-    private DataContext _context;
+    private readonly DataContext _dbContext;
 
-    public BookService(DataContext context)
+    public BookService(DataContext dbContext)
     {
-        this._context = context;
+        _dbContext = dbContext;
     }
 
     public IEnumerable<Book> GetAll()
     {
-        return this._context.Books;
+        return _dbContext.Books;
     }
 
     public Book GetById(int id)
     {
-        return this.getBook(id);
+        return GetBook(id);
     }
 
     public Book Add(Book book)
     {
         // TODO: proper validation of book
-        if (_context.Books.Any(x => x.Id == book.Id))
+        if (_dbContext.Books.Any(x => x.Id == book.Id))
             throw new Exception("Book already exists");
-        _context.Books.Add(book);
+        _dbContext.Books.Add(book);
         return book;
     }
 
     public void Update(Book book)
     {
-        var b = getBook(book.Id);
-        
+        var b = GetBook(book.Id);
+
         // TODO: some validation
-        
+
         // TODO: proper implementation of update
         b.Title = book.Title;
         //b.Author = book.Author;
-        
-        _context.Books.Update(b);
-        _context.SaveChanges();
+
+        _dbContext.Books.Update(b);
+        _dbContext.SaveChanges();
     }
 
     public void Delete(int id)
     {
-        var book = getBook(id);
-        
-        _context.Books.Remove(book);
-        _context.SaveChanges();
+        var book = GetBook(id);
+
+        _dbContext.Books.Remove(book);
+        _dbContext.SaveChanges();
     }
-    
-    private Book getBook(int id)
+
+    private Book GetBook(long id)
     {
-        var book = this._context.Books.Find(id);
-        if (book == null) throw new KeyNotFoundException("Book not found");
+        var book = _dbContext.Books.Find(id);
+
+        if (book == null)
+            throw new InvalidOperationException("Book not found");
+
         return book;
     }
-
 }
-

@@ -1,23 +1,23 @@
-﻿namespace HelloWorld1.Helpers;
-
+﻿using HelloWorld1.Models;
 using Microsoft.EntityFrameworkCore;
-using HelloWorld1.Models;
+
+namespace HelloWorld1.Infrastructure;
 
 public class DataContext : DbContext
 {
-    protected readonly IConfiguration Configuration;
+    private readonly IConfiguration _configuration;
 
     public DataContext(IConfiguration configuration)
     {
-        Configuration = configuration;
+        _configuration = configuration;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         // connect to postgres with connection string from app settings
-        options.UseNpgsql(Configuration.GetConnectionString("HelloWorldDatabase"));
+        options.UseNpgsql(_configuration.GetConnectionString("HelloWorldDatabase"));
     }
 
-    public DbSet<Author> Authors { get; set; }
-    public DbSet<Book> Books { get; set; }
+    public DbSet<Author> Authors { get; set; } = null!;
+    public DbSet<Book> Books { get; set; } = null!;
 }

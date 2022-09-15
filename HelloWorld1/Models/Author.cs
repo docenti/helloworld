@@ -2,10 +2,10 @@
 
 public class Author
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Email { get; set; }
-    public string Url { get; set; }
-    public string Bio { get; set; }
-    public string Image { get; set; }
+    public long Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string Url { get; set; } = null!;
+    public string Bio { get; set; } = null!;
+    public string Image { get; set; } = null!;
 }

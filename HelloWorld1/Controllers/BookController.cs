@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using HelloWorld1.Infrastructure;
+using HelloWorld1.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using HelloWorld1.Helpers;
-using HelloWorld1.Models;
 
 namespace HelloWorld1.Controllers
 {
@@ -14,95 +9,79 @@ namespace HelloWorld1.Controllers
     [ApiController]
     public class BookController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly DataContext _dbContext;
 
-        public BookController(DataContext context)
+        public BookController(DataContext dbContext)
         {
-            _context = context;
+            _dbContext = dbContext;
         }
 
         // GET: api/Book
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooks(CancellationToken cancel)
         {
-            return await _context.Books.ToListAsync();
+            return await _dbContext.Books.ToListAsync(cancel);
         }
 
         // GET: api/Book/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Book>> GetBook(int id)
+        [HttpGet("{id:long}")]
+        public async Task<ActionResult<Book>> GetBook(int id, CancellationToken cancel)
         {
-            var book = await _context.Books.FindAsync(id);
+            // var book = await _dbContext.Books.FindAsync(new object?[] { request.Id }, cancel); // I don't like this
+            var book = await _dbContext.Books.SingleOrDefaultAsync(x=>x.Id == id, cancel);
 
             if (book == null)
-            {
                 return NotFound();
-            }
 
             return book;
         }
 
-        // PUT: api/Book/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutBook(int id, Book book)
+        // PATCH: api/Book/5
+        [HttpPatch("{id:long}")]
+        public async Task<IActionResult> PutBook(long id, Book request, CancellationToken cancel)
         {
-            if (id != book.Id)
-            {
-                return BadRequest();
-            }
+            var book = await _dbContext.Books.SingleOrDefaultAsync(x=> x.Id == request.Id, cancel);
 
-            _context.Entry(book).State = EntityState.Modified;
+            if (book == null)
+                return NotFound();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BookExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            book.Title = request.Title;
+            // book.AuthorRef = request.AuthorRef;
+            book.PublishedOn = request.PublishedOn;
+            book.ImageUrl = request.ImageUrl;
+            book.Description = request.Description;
+
+            await _dbContext.SaveChangesAsync(cancel);
 
             return NoContent();
         }
 
         // POST: api/Book
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Book>> PostBook(Book book)
+        public async Task<ActionResult<Book>> PostBook(Book book, CancellationToken cancel)
         {
-            _context.Books.Add(book);
-            await _context.SaveChangesAsync();
+            if (book.Id != default)
+                return BadRequest();
 
-            return CreatedAtAction("GetBook", new { id = book.Id }, book);
+            _dbContext.Books.Add(book);
+            await _dbContext.SaveChangesAsync(cancel);
+
+            return book;
         }
 
         // DELETE: api/Book/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(int id)
+        [HttpDelete("{id:long}")]
+        public async Task<IActionResult> DeleteBook(int id, CancellationToken cancel)
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null)
-            {
-                return NotFound();
-            }
+            var book = await _dbContext.Books.SingleOrDefaultAsync(x=> x.Id == id, cancel);
 
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
+            if (book == null)
+                return NotFound();
+
+            _dbContext.Books.Remove(book);
+            await _dbContext.SaveChangesAsync(cancel);
 
             return NoContent();
-        }
-
-        private bool BookExists(int id)
-        {
-            return (_context.Books?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
