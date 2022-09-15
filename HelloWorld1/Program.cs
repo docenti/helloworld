@@ -1,4 +1,4 @@
-using HelloWorld1.Helpers;
+using HelloWorld1.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
