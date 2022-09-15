@@ -74,11 +74,10 @@ namespace HelloWorld1.Controllers
         }
         
         // GET: api/Book
-        [HttpGet("newest/{amount}")]
+        [HttpGet("newest/{amount:int}")]
         public async Task<ActionResult<IEnumerable<Book>>> GetNewest(int amount, CancellationToken cancel)
         {
             return Ok(await _bookService.GetNewest(amount, cancel));
         }
-
     }
 }
